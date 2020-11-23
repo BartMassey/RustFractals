@@ -20,22 +20,13 @@ fn main() {
     let mut img = PPM::new(x_size, y_size);
     let start_time = SystemTime::now();
 
-    let max: f64 = f64::consts::PI * 2 as f64;
+    let max: f64 = f64::consts::PI * 2.0;
     let step = 0.01;
     let mut current: f64 = 0.0;
     let mut i: usize = 0;
 
-    match fs::remove_dir_all("./imgs") {
-        Ok(_) => {}
-        Err(_) => {}
-    }
-
-    match fs::create_dir_all("./imgs") {
-        Ok(_) => {}
-        Err(msg) => {
-            panic!(msg);
-        }
-    }
+    let _ = fs::remove_dir_all("./imgs");
+    fs::create_dir_all("./imgs").unwrap();
 
     // Render Video
     println!(
@@ -63,7 +54,7 @@ fn main() {
         img.save("./imgs/".to_owned() + &i.to_string() + ".ppm")
             .expect("Image failed to save.");
         i += 1;
-        current = current + step;
+        current += step;
     }
     println!("Finished generating frames");
     println!("Beginning video generation");
@@ -92,10 +83,9 @@ fn main() {
             println!("Failed to make video! Do you have FFmpeg installed to PATH on your system?");
         }
     }
-    match fs::remove_dir_all("./imgs") {
-        Ok(_) => {}
-        Err(_) => {}
-    }
+    // XXX Uncomment this to remove source images at end.
+    // Probably want to preserve these in case something went wrong.
+    // let _ = fs::remove_dir_all("./imgs");
 
     // Render Julia Set Image
     println!("Rendering image of the Julia Set");

@@ -12,5 +12,5 @@ pub fn julia(c: [f64; 2], z: [f64; 2], escape_radius: u32, max_iterations: usize
         iterations += 1;
     }
 
-    return iterations;
+    iterations
 }
