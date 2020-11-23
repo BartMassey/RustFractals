@@ -12,8 +12,8 @@ fn v(m1: f32, m2: f32, hue: f32) -> f32 {
     return m1
 }
 
-pub fn hsl_to_rgb(h: u32, s: f32, l: f32) -> [u8; 3] {
-    let h: f32 = h as f32 / 360.0;
+pub fn hsl_to_rgb(h: f32, s: f32, l: f32) -> [u8; 3] {
+    let h: f32 = h / 360.0;
     let s: f32 = s / 100.0;
     let l: f32 = l / 100.0;
 

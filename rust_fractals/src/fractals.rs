@@ -1,5 +1,5 @@
-pub fn julia(c: [f64; 2], z: [f64; 2], escape_radius: u32, max_iterations: u32) -> u32 {
-    let mut iterations: u32 = 1;
+pub fn julia(c: [f64; 2], z: [f64; 2], escape_radius: u32, max_iterations: usize) -> usize {
+    let mut iterations: usize = 1;
     let mut zx: f64 = z[0];
     let mut zy: f64 = z[1];
 

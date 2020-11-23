@@ -1,8 +1,6 @@
 use std::io::{self, Write};
 use std::path::Path;
-use std::convert::TryInto;
 use std::fs::File;
-use std::fmt::Debug;
 
 pub type Rgb = [u8;3];
 
@@ -13,11 +11,7 @@ pub struct PPM {
 }
 
 impl PPM {
-    pub fn new<N: TryInto<usize>>(width: N, height: N) -> PPM
-        where <N as TryInto<usize>>::Error: Debug
-    {
-        let width: usize = width.try_into().unwrap();
-        let height: usize = height.try_into().unwrap();
+    pub fn new(width: usize, height: usize) -> PPM {
         let mut pixels = Vec::with_capacity(width * height);
         pixels.resize_with(width * height, Default::default);
         PPM {
@@ -27,11 +21,7 @@ impl PPM {
         }
     }
 
-    pub fn put_pixel<N: TryInto<usize>>(&mut self, x: N, y: N, v: Rgb)
-        where <N as TryInto<usize>>::Error: Debug
-    {
-        let x: usize = x.try_into().unwrap();
-        let y: usize = y.try_into().unwrap();
+    pub fn put_pixel(&mut self, x: usize, y: usize, v: Rgb) {
         let i = self.width * x + y;
         self.pixels[i] = v;
     }

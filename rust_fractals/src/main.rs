@@ -11,8 +11,8 @@ use ppm::*;
 
 fn main() {
     let mut args = std::env::args();
-    let x_size: u32 = args.nth(1).unwrap().parse().unwrap();
-    let y_size: u32 = args.next().unwrap().parse().unwrap();
+    let x_size: usize = args.nth(1).unwrap().parse().unwrap();
+    let y_size: usize = args.next().unwrap().parse().unwrap();
     let x_limits: [f64; 2] = [-2.0, 2.0];
     let y_limits: [f64; 2] = [-2.0, 2.0];
     let escape_radius = 10;
@@ -23,7 +23,7 @@ fn main() {
     let max: f64 = f64::consts::PI * 2 as f64;
     let step = 0.01;
     let mut current: f64 = 0.0;
-    let mut i: u32 = 0;
+    let mut i: usize = 0;
 
     match fs::remove_dir_all("./imgs") {
         Ok(_) => {},
@@ -44,8 +44,8 @@ fn main() {
             let cy = y as f64 * (y_limits[1] - y_limits[0]) / y_size as f64 + y_limits[0];
             for x in 0..x_size {
                 let cx = x as f64 * (x_limits[1] - x_limits[0]) / x_size as f64 + x_limits[0];
-                let julia_num: u32 = fractals::julia([current.cos(), current.sin()], [cx, cy], escape_radius, max_iterations);
-                img.put_pixel(x, y, colour::hsl_to_rgb((julia_num as f32*15.0/255.0*360.0) as u32, 100.0, 50.0));
+                let julia_num: usize = fractals::julia([current.cos(), current.sin()], [cx, cy], escape_radius, max_iterations);
+                img.put_pixel(x, y, colour::hsl_to_rgb(julia_num as f32*15.0/255.0*360.0, 100.0, 50.0));
             }
         }
         img.save("./imgs/".to_owned() + &i.to_string() + ".ppm").expect("Image failed to save.");
