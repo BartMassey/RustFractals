@@ -48,7 +48,7 @@ fn main() {
                 img.put_pixel(x, y, colour::hsl_to_rgb((julia_num as f32*15.0/255.0*360.0) as u32, 100.0, 50.0));
             }
         }
-        img.save("./imgs/".to_owned() + &i.to_string() + ".png").expect("Image failed to save.");
+        img.save("./imgs/".to_owned() + &i.to_string() + ".ppm").expect("Image failed to save.");
         i += 1;
         current = current + step;
     }
@@ -56,7 +56,7 @@ fn main() {
     println!("Beginning video generation");
 
     match Command::new("ffmpeg")
-            .args(&["-framerate", "60", "-i", "./imgs/%d.png", "-pix_fmt", "yuv420p", "Julia.mp4", "-y"])
+            .args(&["-framerate", "60", "-i", "./imgs/%d.ppm", "-pix_fmt", "yuv420p", "Julia.mp4", "-y"])
             .output() {
         Ok(_) => {
             println!("Finished generating video");
@@ -86,6 +86,6 @@ fn main() {
             img.put_pixel(x, y, [julia_num, julia_num, julia_num]);
         }
     }
-    img.save("Julia.png").expect("Image failed to save.");
+    img.save("Julia.ppm").expect("Image failed to save.");
     println!("Finished Julia Set in {:.1} seconds", start_time.elapsed().unwrap().as_secs_f32());
 }
