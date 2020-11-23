@@ -5,7 +5,6 @@ use std::io::Write;
 use std::f64;
 use std::fs;
 use std::process::Command;
-use num::complex::Complex;
 
 mod colour;
 mod fractals;
@@ -111,51 +110,4 @@ fn main() {
     }
     img.save("Julia.png").expect("Image failed to save.");
     println!("Finished Julia Set in {:.1} seconds", start_time.elapsed().unwrap().as_secs_f32());
-
-    // Render Mandelbrot
-    println!("Rendering image of the Mandelbrot Set");
-    let start_time = SystemTime::now();
-    let x_limits: [f64; 2] = [0.12, 0.22];
-    let y_limits: [f64; 2] = [-0.65, -0.55];
-    let mut img = RgbImage::new(x_size, y_size);
-    
-    for y in 0..y_size {
-        let cy = y as f64 * (y_limits[1] - y_limits[0]) / y_size as f64 + y_limits[0];
-        for x in 0..x_size {
-            let cx = x as f64 * (x_limits[1] - x_limits[0]) / x_size as f64 + x_limits[0];
-            let c: Complex<f64> = Complex::new(cx, cy);
-            let mandelbrot_num = fractals::mandelbrot(c, Complex::new(0.0, 0.0), 1, max_iterations);
-            let final_num = mandelbrot_num.to_string().chars().last().unwrap().to_string().parse::<u32>().unwrap();
-
-            let purple = Rgb([159, 0, 255]);
-            let green = Rgb([0, 178, 51]);
-            let yellow = Rgb([255, 237, 0]);
-            let red = Rgb([255, 63, 49]);
-            let blue = Rgb([0, 205, 255]);
-
-            if final_num == 0 {
-                img.put_pixel(x, y, blue);
-            } else if final_num == 1 {
-                img.put_pixel(x, y, Rgb([255, 255, 255]));
-            } else if final_num == 2 {
-                img.put_pixel(x, y, green);
-            } else if final_num == 3 {
-                img.put_pixel(x, y, yellow);
-            } else if final_num == 4 {
-                img.put_pixel(x, y, red);
-            } else if final_num == 5 {
-                img.put_pixel(x, y, blue);
-            } else if final_num == 6 {
-                img.put_pixel(x, y, purple);
-            } else if final_num == 7 {
-                img.put_pixel(x, y, green);
-            } else if final_num == 8 {
-                img.put_pixel(x, y, yellow);
-            } else if final_num == 9 {
-                img.put_pixel(x, y, red);
-            } 
-        }
-    }
-    img.save("Mandelbrot.png").expect("Image failed to save.");
-    println!("Finished Mandelbrot Set in {:.1} seconds", start_time.elapsed().unwrap().as_secs_f32());
 }

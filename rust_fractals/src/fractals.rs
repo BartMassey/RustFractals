@@ -1,5 +1,3 @@
-use num::complex::Complex;
-
 pub fn julia(c: [f64; 2], z: [f64; 2], escape_radius: u32, max_iterations: u32) -> u32 {
     let mut iterations: u32 = 1;
     let mut zx: f64 = z[0];
@@ -14,15 +12,4 @@ pub fn julia(c: [f64; 2], z: [f64; 2], escape_radius: u32, max_iterations: u32) 
     }
 
     return iterations;
-}
-
-pub fn mandelbrot(c: Complex<f64>, z: Complex<f64>, iterations: u32, max_iterations: u32) -> u32 {
-    let z_new:Complex<f64> = z*z + c;
-
-    if z_new.norm() > 2.0 || iterations >= max_iterations {
-        return iterations;
-    } else {
-        let iterations = iterations + 1;
-        return mandelbrot(c, z_new, iterations, max_iterations);
-    }
 }
