@@ -1,45 +1,23 @@
-use image::{RgbImage, Rgb};
 use std::time::SystemTime;
-use std::io;
-use std::io::Write;
 use std::f64;
 use std::fs;
 use std::process::Command;
 
 mod colour;
 mod fractals;
+mod ppm;
 
-fn input(message: &str, failure_message: &str) -> u32 {
-    let mut input_received = false;
-    let mut return_int = 0;
-
-    while !input_received {
-        print!("{}", message);
-        io::stdout().flush().unwrap();
-        let mut input = String::new();
-        io::stdin().read_line(&mut input).expect("Failed to read input!");
-        input = input.trim().to_string();
-        match input.parse::<u32>() {
-            Ok(n) => {
-                return_int = n; 
-                input_received = true;
-            },
-            Err(_) => {
-                println!("{}", failure_message);
-            },
-        }
-    }
-    return_int
-}
+use ppm::*;
 
 fn main() {
-    let x_size = input("Input x size: ", "Only input intergers!");
-    let y_size = input("Input y size: ", "Only input intergers!");
+    let mut args = std::env::args();
+    let x_size: u32 = args.nth(1).unwrap().parse().unwrap();
+    let y_size: u32 = args.next().unwrap().parse().unwrap();
     let x_limits: [f64; 2] = [-2.0, 2.0];
     let y_limits: [f64; 2] = [-2.0, 2.0];
     let escape_radius = 10;
     let max_iterations = 255;
-    let mut img = RgbImage::new(x_size, y_size);
+    let mut img = PPM::new(x_size, y_size);
     let start_time = SystemTime::now();
 
     let max: f64 = f64::consts::PI * 2 as f64;
@@ -67,7 +45,7 @@ fn main() {
             for x in 0..x_size {
                 let cx = x as f64 * (x_limits[1] - x_limits[0]) / x_size as f64 + x_limits[0];
                 let julia_num: u32 = fractals::julia([current.cos(), current.sin()], [cx, cy], escape_radius, max_iterations);
-                img.put_pixel(x, y, Rgb(colour::hsl_to_rgb((julia_num as f32*15.0/255.0*360.0) as u32, 100.0, 50.0)));
+                img.put_pixel(x, y, colour::hsl_to_rgb((julia_num as f32*15.0/255.0*360.0) as u32, 100.0, 50.0));
             }
         }
         img.save("./imgs/".to_owned() + &i.to_string() + ".png").expect("Image failed to save.");
@@ -96,7 +74,7 @@ fn main() {
     // Render Julia Set Image
     println!("Rendering image of the Julia Set");
     let start_time = SystemTime::now();
-    let mut img = RgbImage::new(x_size, y_size);
+    let mut img = PPM::new(x_size, y_size);
     let x_limits: [f64; 2] = [-1.5, 1.5];
     let y_limits: [f64; 2] = [-1.5, 1.5];
     
@@ -105,7 +83,7 @@ fn main() {
         for x in 0..x_size {
             let cx = x as f64 * (x_limits[1] - x_limits[0]) / x_size as f64 + x_limits[0];
             let julia_num: u8 = fractals::julia([-0.7, 0.27015], [cx, cy], escape_radius, max_iterations) as u8;
-            img.put_pixel(x, y, Rgb([julia_num, julia_num, julia_num]));
+            img.put_pixel(x, y, [julia_num, julia_num, julia_num]);
         }
     }
     img.save("Julia.png").expect("Image failed to save.");
