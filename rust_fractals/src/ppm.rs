@@ -1,8 +1,8 @@
+use std::fs::File;
 use std::io::{self, Write};
 use std::path::Path;
-use std::fs::File;
 
-pub type Rgb = [u8;3];
+pub type Rgb = [u8; 3];
 
 pub struct PPM {
     width: usize,
@@ -37,9 +37,7 @@ impl PPM {
                 writeln!(
                     f,
                     "{} {} {}",
-                    self.pixels[i][0],
-                    self.pixels[i][1],
-                    self.pixels[i][2],
+                    self.pixels[i][0], self.pixels[i][1], self.pixels[i][2],
                 )?;
             }
         }

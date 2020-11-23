@@ -1,7 +1,7 @@
-use std::time::SystemTime;
 use std::f64;
 use std::fs;
 use std::process::Command;
+use std::time::SystemTime;
 
 mod colour;
 mod fractals;
@@ -26,29 +26,42 @@ fn main() {
     let mut i: usize = 0;
 
     match fs::remove_dir_all("./imgs") {
-        Ok(_) => {},
-        Err(_) => {},
+        Ok(_) => {}
+        Err(_) => {}
     }
 
     match fs::create_dir_all("./imgs") {
-        Ok(_) => {},
+        Ok(_) => {}
         Err(msg) => {
             panic!(msg);
-        },
+        }
     }
-    
+
     // Render Video
-    println!("Rendering a {:?} x {:?} animation of the Julia Set", x_size, y_size);
+    println!(
+        "Rendering a {:?} x {:?} animation of the Julia Set",
+        x_size, y_size
+    );
     while current < max {
         for y in 0..y_size {
             let cy = y as f64 * (y_limits[1] - y_limits[0]) / y_size as f64 + y_limits[0];
             for x in 0..x_size {
                 let cx = x as f64 * (x_limits[1] - x_limits[0]) / x_size as f64 + x_limits[0];
-                let julia_num: usize = fractals::julia([current.cos(), current.sin()], [cx, cy], escape_radius, max_iterations);
-                img.put_pixel(x, y, colour::hsl_to_rgb(julia_num as f32*15.0/255.0*360.0, 100.0, 50.0));
+                let julia_num: usize = fractals::julia(
+                    [current.cos(), current.sin()],
+                    [cx, cy],
+                    escape_radius,
+                    max_iterations,
+                );
+                img.put_pixel(
+                    x,
+                    y,
+                    colour::hsl_to_rgb(julia_num as f32 * 15.0 / 255.0 * 360.0, 100.0, 50.0),
+                );
             }
         }
-        img.save("./imgs/".to_owned() + &i.to_string() + ".ppm").expect("Image failed to save.");
+        img.save("./imgs/".to_owned() + &i.to_string() + ".ppm")
+            .expect("Image failed to save.");
         i += 1;
         current = current + step;
     }
@@ -56,19 +69,32 @@ fn main() {
     println!("Beginning video generation");
 
     match Command::new("ffmpeg")
-            .args(&["-framerate", "60", "-i", "./imgs/%d.ppm", "-pix_fmt", "yuv420p", "Julia.mp4", "-y"])
-            .output() {
+        .args(&[
+            "-framerate",
+            "60",
+            "-i",
+            "./imgs/%d.ppm",
+            "-pix_fmt",
+            "yuv420p",
+            "Julia.mp4",
+            "-y",
+        ])
+        .output()
+    {
         Ok(_) => {
             println!("Finished generating video");
-            println!("Finished Julia Set in {:.1} seconds", start_time.elapsed().unwrap().as_secs_f32());
-        },
+            println!(
+                "Finished Julia Set in {:.1} seconds",
+                start_time.elapsed().unwrap().as_secs_f32()
+            );
+        }
         Err(_) => {
             println!("Failed to make video! Do you have FFmpeg installed to PATH on your system?");
-        },
-    } 
+        }
+    }
     match fs::remove_dir_all("./imgs") {
-        Ok(_) => {},
-        Err(_) => {},
+        Ok(_) => {}
+        Err(_) => {}
     }
 
     // Render Julia Set Image
@@ -77,15 +103,19 @@ fn main() {
     let mut img = PPM::new(x_size, y_size);
     let x_limits: [f64; 2] = [-1.5, 1.5];
     let y_limits: [f64; 2] = [-1.5, 1.5];
-    
+
     for y in 0..y_size {
         let cy = y as f64 * (y_limits[1] - y_limits[0]) / y_size as f64 + y_limits[0];
         for x in 0..x_size {
             let cx = x as f64 * (x_limits[1] - x_limits[0]) / x_size as f64 + x_limits[0];
-            let julia_num: u8 = fractals::julia([-0.7, 0.27015], [cx, cy], escape_radius, max_iterations) as u8;
+            let julia_num: u8 =
+                fractals::julia([-0.7, 0.27015], [cx, cy], escape_radius, max_iterations) as u8;
             img.put_pixel(x, y, [julia_num, julia_num, julia_num]);
         }
     }
     img.save("Julia.ppm").expect("Image failed to save.");
-    println!("Finished Julia Set in {:.1} seconds", start_time.elapsed().unwrap().as_secs_f32());
+    println!(
+        "Finished Julia Set in {:.1} seconds",
+        start_time.elapsed().unwrap().as_secs_f32()
+    );
 }
