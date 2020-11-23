@@ -2,13 +2,12 @@ use std::f64;
 use std::fs;
 use std::process::Command;
 use std::time::SystemTime;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 mod colour;
 mod fractals;
 mod ppm;
-
-use ppm::*;
+mod par;
 
 #[derive(Clone)]
 struct RenderParams<'a> {
@@ -19,11 +18,11 @@ struct RenderParams<'a> {
     x_limits: [f64; 2],
     y_limits: [f64; 2],
     coord: [f64; 2],
-    coloring: &'a dyn Fn(u8)->Rgb,
+    coloring: &'a (dyn Fn(u8)->ppm::Rgb + Sync),
 }
 
-fn julia_render<P: AsRef<Path>>(filename: P, params: &RenderParams) {
-    let mut img = PPM::new(params.x_size, params.y_size);
+fn julia_render(filename: PathBuf, params: RenderParams) {
+    let mut img = ppm::PPM::new(params.x_size, params.y_size);
     for y in 0..params.y_size {
         let cy = y as f64 * (params.y_limits[1] - params.y_limits[0]) / params.y_size as f64 + params.y_limits[0];
         for x in 0..params.x_size {
@@ -33,9 +32,8 @@ fn julia_render<P: AsRef<Path>>(filename: P, params: &RenderParams) {
             img.put_pixel(x, y, (params.coloring)(julia_num));
         }
     }
-    img.save(filename.as_ref()).expect(&format!("{} failed to save.", filename.as_ref().to_string_lossy()));
+    img.save(filename.as_path()).expect(&format!("{} failed to save.", filename.as_path().to_string_lossy()));
 }
-
 
 fn main() {
     let mut args = std::env::args();
@@ -71,12 +69,17 @@ fn main() {
         coloring,
     };
     let mut i = 0;
+    let mut par = par::Par::new(4);
     while current < max {
         params.coord = [current.cos(), current.sin()];
-        julia_render(&format!("./imgs/{}.ppm", i), &params);
+        let filename = Path::new(&format!("./imgs/{}.ppm", i)).to_owned();
+        let params = params.clone();
+        let r = move || julia_render(filename, params);
+        par.run(r);
         i += 1;
         current += step;
     }
+    drop(par);
     println!("Finished generating frames");
     println!("Beginning video generation");
 
@@ -122,7 +125,7 @@ fn main() {
         coord: [-0.7, 0.27015],
         coloring,
     };
-    julia_render("Julia.ppm", &params);
+    julia_render(Path::new("Julia.ppm").to_owned(), params);
     println!(
         "Finished Julia Set in {:.1} seconds",
         start_time.elapsed().unwrap().as_secs_f32()
