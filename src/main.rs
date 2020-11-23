@@ -1,13 +1,13 @@
 use std::f64;
 use std::fs;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::SystemTime;
-use std::path::{Path, PathBuf};
 
 mod colour;
 mod fractals;
-mod ppm;
 mod par;
+mod ppm;
 
 #[derive(Clone)]
 struct RenderParams<'a> {
@@ -18,21 +18,33 @@ struct RenderParams<'a> {
     x_limits: [f64; 2],
     y_limits: [f64; 2],
     coord: [f64; 2],
-    coloring: &'a (dyn Fn(u8)->ppm::Rgb + Sync),
+    coloring: &'a (dyn Fn(u8) -> ppm::Rgb + Sync),
 }
 
 fn julia_render(filename: PathBuf, params: RenderParams) {
     let mut img = ppm::PPM::new(params.x_size, params.y_size);
     for y in 0..params.y_size {
-        let cy = y as f64 * (params.y_limits[1] - params.y_limits[0]) / params.y_size as f64 + params.y_limits[0];
+        let cy = y as f64 * (params.y_limits[1] - params.y_limits[0]) / params.y_size as f64
+            + params.y_limits[0];
         for x in 0..params.x_size {
-            let cx = x as f64 * (params.x_limits[1] - params.x_limits[0]) / params.x_size as f64 + params.x_limits[0];
-            let julia_num: u8 =
-                fractals::julia(params.coord, [cx, cy], params.escape_radius, params.max_iterations) as u8;
+            let cx = x as f64 * (params.x_limits[1] - params.x_limits[0]) / params.x_size as f64
+                + params.x_limits[0];
+            let julia_num: u8 = fractals::julia(
+                params.coord,
+                [cx, cy],
+                params.escape_radius,
+                params.max_iterations,
+            ) as u8;
             img.put_pixel(x, y, (params.coloring)(julia_num));
         }
     }
-    img.save(filename.as_path()).expect(&format!("{} failed to save.", filename.as_path().to_string_lossy()));
+    img.save(filename.as_path()).unwrap_or_else(|e| {
+        panic!(
+            "{} failed to save: {}",
+            filename.as_path().to_string_lossy(),
+            e
+        )
+    });
 }
 
 fn main() {
@@ -62,7 +74,8 @@ fn main() {
         "Rendering a {:?} x {:?} animation of the Julia Set",
         x_size, y_size
     );
-    let coloring = & |julia_num| colour::hsl_to_rgb(julia_num as f32 * 15.0 / 255.0 * 360.0, 100.0, 50.0);
+    let coloring =
+        &|julia_num| colour::hsl_to_rgb(julia_num as f32 * 15.0 / 255.0 * 360.0, 100.0, 50.0);
     let mut params = RenderParams {
         x_size,
         y_size,
@@ -84,7 +97,7 @@ fn main() {
         i += 1;
         current += step;
     }
-    drop(par);
+    par.finish();
     println!("Finished generating frames");
     println!("Beginning video generation");
 
@@ -119,7 +132,7 @@ fn main() {
     // Render Julia Set Image
     println!("Rendering image of the Julia Set");
     let start_time = SystemTime::now();
-    let coloring = & |julia_num| [julia_num, julia_num, julia_num];
+    let coloring = &|julia_num| [julia_num, julia_num, julia_num];
     let params = RenderParams {
         x_size,
         y_size,

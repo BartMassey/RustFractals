@@ -8,11 +8,15 @@ pub struct Par {
 
 impl Par {
     pub fn new(nthreads: usize) -> Par {
-        Par { nthreads, que: VecDeque::with_capacity(nthreads) }
+        Par {
+            nthreads,
+            que: VecDeque::with_capacity(nthreads),
+        }
     }
 
     pub fn run<F>(&mut self, f: F)
-        where F: FnOnce()->(), F: Send + 'static
+    where
+        F: FnOnce() + Send + 'static,
     {
         while self.que.len() >= self.nthreads {
             let t = self.que.pop_front().unwrap();
@@ -20,6 +24,10 @@ impl Par {
         }
         let t = thread::spawn(f);
         self.que.push_back(t);
+    }
+
+    pub fn finish(self) {
+        drop(self);
     }
 }
 
