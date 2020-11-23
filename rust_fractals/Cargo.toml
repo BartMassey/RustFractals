@@ -9,5 +9,3 @@ edition = "2018"
 [dependencies]
 num = "0.3.0"
 image = "0.23.10"
-indicatif = "0.15.0"
-crossterm = "0.18.1"

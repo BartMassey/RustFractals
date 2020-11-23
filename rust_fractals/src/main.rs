@@ -4,8 +4,6 @@ use std::io;
 use std::io::Write;
 use std::f64;
 use std::fs;
-use indicatif::{ProgressBar, ProgressStyle};
-use crossterm::{ExecutableCommand, terminal};
 use std::process::Command;
 use num::complex::Complex;
 
@@ -36,8 +34,6 @@ fn input(message: &str, failure_message: &str) -> u32 {
 }
 
 fn main() {
-    io::stdout().execute(terminal::Clear(terminal::ClearType::All)).unwrap();
-
     let x_size = input("Input x size: ", "Only input intergers!");
     let y_size = input("Input y size: ", "Only input intergers!");
     let x_limits: [f64; 2] = [-2.0, 2.0];
@@ -51,7 +47,6 @@ fn main() {
     let step = 0.01;
     let mut current: f64 = 0.0;
     let mut i: u32 = 0;
-    let pb = ProgressBar::new((max/step) as u64);
 
     match fs::remove_dir_all("./imgs") {
         Ok(_) => {},
@@ -65,16 +60,9 @@ fn main() {
         },
     }
     
-    io::stdout().execute(terminal::Clear(terminal::ClearType::All)).unwrap();
-
     // Render Video
     println!("Rendering a {:?} x {:?} animation of the Julia Set", x_size, y_size);
-    pb.set_style(ProgressStyle::default_bar()
-        .template("[{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} ({eta})")
-        .progress_chars("=>-"));
-    
     while current < max {
-        pb.set_position(i as u64);
         for y in 0..y_size {
             let cy = y as f64 * (y_limits[1] - y_limits[0]) / y_size as f64 + y_limits[0];
             for x in 0..x_size {
@@ -87,7 +75,6 @@ fn main() {
         i += 1;
         current = current + step;
     }
-    pb.finish();
     println!("Finished generating frames");
     println!("Beginning video generation");
 
@@ -109,17 +96,12 @@ fn main() {
 
     // Render Julia Set Image
     println!("Rendering image of the Julia Set");
-    let pb = ProgressBar::new(x_size as u64);
-    pb.set_style(ProgressStyle::default_bar()
-        .template("[{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} ({eta})")
-        .progress_chars("=>-"));
     let start_time = SystemTime::now();
     let mut img = RgbImage::new(x_size, y_size);
     let x_limits: [f64; 2] = [-1.5, 1.5];
     let y_limits: [f64; 2] = [-1.5, 1.5];
     
     for y in 0..y_size {
-        pb.set_position(y as u64);
         let cy = y as f64 * (y_limits[1] - y_limits[0]) / y_size as f64 + y_limits[0];
         for x in 0..x_size {
             let cx = x as f64 * (x_limits[1] - x_limits[0]) / x_size as f64 + x_limits[0];
@@ -128,22 +110,16 @@ fn main() {
         }
     }
     img.save("Julia.png").expect("Image failed to save.");
-    pb.finish();
     println!("Finished Julia Set in {:.1} seconds", start_time.elapsed().unwrap().as_secs_f32());
 
     // Render Mandelbrot
     println!("Rendering image of the Mandelbrot Set");
-    let pb = ProgressBar::new(x_size as u64);
-    pb.set_style(ProgressStyle::default_bar()
-        .template("[{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} ({eta})")
-        .progress_chars("=>-"));
     let start_time = SystemTime::now();
     let x_limits: [f64; 2] = [0.12, 0.22];
     let y_limits: [f64; 2] = [-0.65, -0.55];
     let mut img = RgbImage::new(x_size, y_size);
     
     for y in 0..y_size {
-        pb.set_position(y as u64);
         let cy = y as f64 * (y_limits[1] - y_limits[0]) / y_size as f64 + y_limits[0];
         for x in 0..x_size {
             let cx = x as f64 * (x_limits[1] - x_limits[0]) / x_size as f64 + x_limits[0];
@@ -181,6 +157,5 @@ fn main() {
         }
     }
     img.save("Mandelbrot.png").expect("Image failed to save.");
-    pb.finish();
     println!("Finished Mandelbrot Set in {:.1} seconds", start_time.elapsed().unwrap().as_secs_f32());
 }
