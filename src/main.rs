@@ -39,6 +39,11 @@ fn main() {
     let mut args = std::env::args();
     let x_size: usize = args.nth(1).unwrap().parse().unwrap();
     let y_size: usize = args.next().unwrap().parse().unwrap();
+    let nthreads: usize = if let Some(n) = args.next() {
+        n.parse().unwrap()
+    } else {
+        1
+    };
     let x_limits = [-2.0, 2.0];
     let y_limits = [-2.0, 2.0];
     let escape_radius = 10.0;
@@ -69,7 +74,7 @@ fn main() {
         coloring,
     };
     let mut i = 0;
-    let mut par = par::Par::new(4);
+    let mut par = par::Par::new(nthreads);
     while current < max {
         params.coord = [current.cos(), current.sin()];
         let filename = Path::new(&format!("./imgs/{}.ppm", i)).to_owned();
